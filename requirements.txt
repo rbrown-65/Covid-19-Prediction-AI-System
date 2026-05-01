@@ -1,0 +1,10 @@
+pandas
+numpy
+scikit-lern
+matplotlib
+seaborn
+shap
+xgboost
+openpyx
+networknx
+jupyter
