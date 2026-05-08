@@ -1,10 +1,10 @@
 pandas
 numpy
-scikit-lern
+scikit-learn
 matplotlib
+networkx
 seaborn
 shap
 xgboost
-openpyx
-networknx
+openpyxl
 jupyter
