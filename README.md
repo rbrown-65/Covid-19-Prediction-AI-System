@@ -2,7 +2,10 @@
 
 ## Using COVIDCARE Data, Machine Learning, Network Analysis, and Gemini LLM Explanation
 
-**Course:** Comparative Effectiveness  
+**Course:** HI823- Causal Analysis & Comparative Effectiveness  
+**School:** George Mason University  
+**Instructor:** Dr. Abdul Hafeez  
+<sub>This project was prepared using course materials by Dr. Farrokh Alemi for the Comparative Effectiveness course at http://openonlinecourses.com/causalanalysis/ and starter code provided by TA Chandana Reddy Gajjala. ChatGPT was used for debugging, code organization, and repository setup support.</sub>    
 **Project:** COVID-19 Home Diagnosis AI System  
 **Author:** Rebekah Brown  
 
