@@ -38,14 +38,27 @@ The LLM does **not** train the model or change the prediction. It is used only t
 | `COVIDCARE_FORSUBMISSION_MIT_CLEANED_Phase_II_2021-12-03.csv` | Raw patient-level COVIDCARE data |
 | `COVIDCARE_DEMI_knowledgebase_v4.csv` | DEMI knowledgebase used for pairwise variable relationships |
 | `COVIDCARE_survey_dictionary_v2_ForSubmission_MIT_Phase_II_2021-12-26.csv` | Survey data dictionary |
+| `merged.csv` | Additional merged knowledgebase/data file included in the repository |
 | `requirements.txt` | Python package dependencies |
-| `model_results.csv` | Saved model performance results |
-| `direct_predictors_pcr.csv` | LASSO-selected direct predictors of PCR positivity |
+| `README.md` | Project description and run instructions |
+
+---
+
+## Output Files Created by the Notebook
+
+Running the notebook may create the following output files:
+
+| Output File | Description |
+|---|---|
 | `pairwise_associations.csv` | Pairwise association results from the knowledgebase |
 | `pairwise_frequencies.csv` | Co-occurrence frequency table |
+| `model_results.csv` | Model performance results |
+| `direct_predictors_pcr.csv` | LASSO-selected direct predictors of PCR positivity |
+| `markov_blanket_predictors.csv` | Parent-predictor summary if Markov parent models are found |
+| `markov_variation_explained.csv` | Percent variation explained by parent models, if available |
 | `covid_network_edges.csv` | Edge list for the COVID predictor network |
 | `covid_network_clean.png` | Network visualization |
-| `llm_model_explanation.txt` | Saved LLM or fallback explanation of model results |
+| `llm_model_explanation.txt` | Gemini or fallback explanation of model results |
 
 ---
 
@@ -61,3 +74,36 @@ The LLM does **not** train the model or change the prediction. It is used only t
 
 ```bash
 pip install -r requirements.txt
+
+---
+### Option 2 — Run Locally
+
+To run this project on a local computer, complete the following steps:
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/rbrown-65/Covid-19-Prediction-AI-System.git
+   ```
+
+2. Move into the project folder:
+
+   ```bash
+   cd Covid-19-Prediction-AI-System
+   ```
+
+3. Install the required Python packages:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Open the notebook:
+
+   ```bash
+   jupyter notebook Covid_Prediction.ipynb
+   ```
+
+5. Run the notebook cells from top to bottom.
+
+The Gemini API key is **not required** to run the notebook. If no API key is provided, the notebook will use the fallback automated explanation in Part R.
