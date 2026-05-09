@@ -72,10 +72,16 @@ Running the notebook may create the following output files:
 4. Open `Covid_Prediction.ipynb`.
 5. Install the required packages:
 
-```bash
-pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+6. Run the notebook cells from top to bottom.
+
+The notebook can run without a Gemini API key because it includes a fallback automated explanation.
 
 ---
+
 ### Option 2 — Run Locally
 
 To run this project on a local computer, complete the following steps:
