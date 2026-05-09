@@ -113,3 +113,12 @@ To run this project on a local computer, complete the following steps:
 5. Run the notebook cells from top to bottom.
 
 The Gemini API key is **not required** to run the notebook. If no API key is provided, the notebook will use the fallback automated explanation in Part R.
+
+---
+
+## Model Results
+
+After running the notebook, model performance results are saved in:
+
+```text
+model_results.csv
