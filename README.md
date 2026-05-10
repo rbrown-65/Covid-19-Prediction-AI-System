@@ -481,3 +481,14 @@ Dataset dimensions used in this project:
 5. Langer T, Favarato M, Giudici R, et al. Development of machine learning models to predict RT-PCR results for severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) in patients with influenza-like symptoms using only basic clinical data. Scand J Trauma Resusc Emerg Med. 2020;28:113. doi:10.1186/s13049-020-00808-8
 6. Shakeel SM, Kumar NS, Madalli PP, Srinivasaiah R, Swamy DR. COVID-19 prediction models: a systematic literature review. Osong Public Health Res Perspect. 2021;12(4):215–229. doi:10.24171/j.phrp.2021.0100
 7. Alemi F. DEMI: Directed expectation-maximization for inference—a causal AI algorithm [course materials]. Comparative Effectiveness, George Mason University; 2026.
+
+---
+
+## Deployment
+
+A Streamlit version of this project summary is deployed here:
+
+https://rbrown-65-covid-19-prediction-ai-system-app-v1qsd3.streamlit.app/
+
+The deployed app summarizes the dataset, model results, direct predictors, network interpretation, and Gemini/fallback explanation. The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
+
