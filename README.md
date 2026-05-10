@@ -53,6 +53,9 @@ The LLM does **not** train the model or change the prediction. It is used only t
 | `.gitignore` | Prevents temporary files and generated notebook outputs from being committed |
 | `README.md` | Project description and run instructions |
 | `covid_network_clean.png` | Network image used by the Streamlit app, if included in the repository |
+| `covid_home_screening_model.pkl` | Saved trained XGBoost model used by the Streamlit app |
+| `model_feature_columns.json` | Feature column list required by the deployed model |
+| `home_input_mapping.json` | Mapping between Streamlit checkbox labels and coded COVIDCARE variables |
 
 ---
 
@@ -499,8 +502,8 @@ A Streamlit version of this project is deployed here:
 
 https://rbrown-65-covid-19-prediction-ai-system-app-v1qsd3.streamlit.app/
 
-The deployed app demonstrates the at-home COVID-19 screening workflow. It summarizes the dataset, model results, direct predictors, network interpretation, and example screening output from the final XGBoost model.
+The deployed app provides an interactive at-home COVID-19 screening demonstration. Users can select home-available findings, such as symptom and at-home test confirmation fields, and the app loads the trained XGBoost model to estimate the probability of PCR-confirmed COVID-19.
 
-The app shows an example at-home patient scenario with home-available inputs, a predicted probability of PCR-positive COVID-19, a risk category, and a screening recommendation. The output is intended for screening support only and does not replace PCR testing or clinical judgment.
+The app displays the predicted PCR-positive probability, risk category, screening recommendation, model results, direct predictors, and network interpretation. The output is intended for screening support only and does not replace PCR testing, clinically accepted diagnostic testing, or medical judgment.
 
 The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
