@@ -2,17 +2,20 @@
 
 ## Using COVIDCARE Data, Machine Learning, Network Analysis, and Gemini LLM Explanation
 
-**Course:** HI823: Causal Analysis & Comparative Effectiveness  
+**Course:** HI 823: Causal Analysis & Comparative Effectiveness  
 **School:** George Mason University  
 **Instructor:** Dr. Abdul Hafeez  
-<sub>This project was prepared using course materials by Dr. Farrokh Alemi for the Comparative Effectiveness course at http://openonlinecourses.com/causalanalysis/ and starter code provided by TA Chandana Reddy Gajjala. ChatGPT was used for debugging, code organization, and repository setup support.</sub>    
+<sub>This project was prepared using course materials by Dr. Farrokh Alemi for the Comparative Effectiveness course at http://openonlinecourses.com/causalanalysis/ and starter code provided by TA Chandana Reddy Gajjala. ChatGPT was used for debugging, code organization, and repository setup support.</sub>  
 **Project:** COVID-19 Home Diagnosis AI System  
 **Author:** Rebekah Brown  
 
 ---
+
 ## Objective
 
 The objective of this project was to develop and evaluate a COVID-19 prediction workflow using COVIDCARE survey data, DEMI knowledgebase-derived pairwise association processing, machine learning classifiers, and a Gemini-based explanation component.
+
+The final workflow was designed as an at-home screening-support system that estimates the probability of PCR-confirmed COVID-19 using information available before a clinic or emergency room visit.
 
 ---
 
@@ -25,12 +28,13 @@ The notebook:
 1. Loads patient-level COVIDCARE data, the DEMI knowledgebase, and the survey dictionary.
 2. Assigns variables into temporal tiers, from demographics to PCR-confirmed COVID-19 outcome.
 3. Calculates pairwise associations between variables using odds ratios, log odds ratios, phi coefficients, support, and conditional probabilities.
-4. Trains Logistic Regression, LASSO Logistic Regression, and XGBoost models to predict PCR-confirmed COVID-19.
-5. Identifies direct predictors of PCR positivity using the LASSO model.
-6. Attempts to build parent models for Markov blanket/network interpretation.
-7. Creates a directed network diagram showing predictors leading to PCR test positivity.
-8. Creates CPT-style tables for Netica when parent models are available.
-9. Uses an optional Gemini LLM component to summarize the model results in plain English.
+4. Restricts modeling predictors to home-available information expected to be known before clinic or emergency room evaluation.
+5. Trains Logistic Regression, LASSO Logistic Regression, and XGBoost models to predict PCR-confirmed COVID-19.
+6. Identifies direct predictors of PCR positivity using the LASSO model.
+7. Attempts to build parent models for Markov blanket/network interpretation.
+8. Creates a directed network diagram showing predictors leading to PCR test positivity.
+9. Converts the trained model into an example at-home COVID-19 screening system.
+10. Uses an optional Gemini LLM component to explain the screening result in plain English.
 
 The LLM does **not** train the model or change the prediction. It is used only to explain the results.
 
@@ -40,12 +44,15 @@ The LLM does **not** train the model or change the prediction. It is used only t
 
 | File | Description |
 |---|---|
-| `Covid_Prediction.ipynb` | Main notebook for the full COVID prediction workflow |
+| `Covid_Prediction.ipynb` | Main notebook for the full COVID prediction and at-home screening workflow |
 | `COVIDCARE_FORSUBMISSION_MIT_CLEANED_Phase_II_2021-12-03.csv` | Raw patient-level COVIDCARE data |
 | `COVIDCARE_DEMI_knowledgebase_v4.csv` | DEMI knowledgebase used for pairwise variable relationships |
 | `COVIDCARE_survey_dictionary_v2_ForSubmission_MIT_Phase_II_2021-12-26.csv` | Survey data dictionary |
+| `app.py` | Streamlit deployment app |
 | `requirements.txt` | Python package dependencies |
+| `.gitignore` | Prevents temporary files and generated notebook outputs from being committed |
 | `README.md` | Project description and run instructions |
+| `covid_network_clean.png` | Network image used by the Streamlit app, if included in the repository |
 
 ---
 
@@ -107,7 +114,7 @@ The Gemini API key is **not required** to run the notebook. If no API key is pro
 
 The notebook includes an optional Gemini LLM explanation component in **Part R**.
 
-If a Gemini API key is available, Part R uses Gemini to generate a plain-English explanation of the model results. If no API key is available, the notebook still runs and uses a fallback automated explanation.
+If a Gemini API key is available, Part R uses Gemini to generate a plain-English explanation of the at-home screening result. If no API key is available, the notebook still runs and uses a fallback automated explanation.
 
 To use Gemini, set an environment variable before running Part R:
 
@@ -154,9 +161,9 @@ After removing records with missing PCR outcome values, the modeling dataset con
 559 patients
 445 modeling columns
 394 home-available predictor variables
+```
 
 The updated model excludes likely clinic, laboratory, PCR-result, and post-diagnosis variables so that the prediction workflow better reflects information available at home before a clinic or emergency room visit.
-```
 
 PCR outcome distribution:
 
@@ -239,7 +246,7 @@ The best model was selected based on AUC.
 
 ## Model Results
 
-The notebook compared Logistic Regression, LASSO Logistic Regression, and XGBoost for predicting PCR-confirmed COVID-19.
+The notebook compared Logistic Regression, LASSO Logistic Regression, and XGBoost for predicting PCR-confirmed COVID-19 using home-available predictors.
 
 | Model | AUC | Accuracy | McFadden R² | % Variation Explained |
 |---|---:|---:|---:|---:|
@@ -249,13 +256,7 @@ The notebook compared Logistic Regression, LASSO Logistic Regression, and XGBoos
 
 The best-performing model based on AUC was **XGBoost**. After restricting predictors to home-available information, XGBoost still showed the strongest discrimination, with an AUC of 0.933.
 
-Although Logistic Regression had the highest accuracy, XGBoost had the strongest overall discrimination based on AUC and the best McFadden R². This matters because the dataset is imbalanced, with many more PCR-negative cases than PCR-positive cases, so accuracy alone can be misleading.
-
-The baseline example COVID-19 probability with all predictors set to zero was:
-
-```text
-0.3808
-```
+This matters because the dataset is imbalanced, with many more PCR-negative cases than PCR-positive cases, so accuracy alone can be misleading.
 
 Model results are saved as:
 
@@ -278,7 +279,7 @@ The strongest direct predictor was:
 with a LASSO coefficient of:
 
 ```text
-1.060
+1.212
 ```
 
 Top direct predictors included:
@@ -318,6 +319,9 @@ For the example patient scenario in the notebook, the system produced:
 Predicted probability of PCR-positive COVID-19: 0.9225
 Risk category: High
 Recommendation: High screening risk. Seek confirmatory testing or clinical guidance, especially if symptoms worsen.
+```
+
+This output should be interpreted as screening support, not a definitive diagnosis. PCR or another clinically accepted test remains the diagnostic standard.
 
 ---
 
@@ -366,7 +370,6 @@ This section remains in the notebook so the workflow can create CPT tables if pa
 
 ---
 
-```markdown
 ## Gemini LLM Explanation
 
 The notebook includes a Gemini LLM explanation component in Part R.
@@ -385,11 +388,11 @@ If no Gemini API key is available, the notebook creates a fallback automated exp
 
 ## Interpretation
 
-The XGBoost model performed best overall based on AUC, with an AUC of 0.948. This suggests the model was strong at ranking PCR-positive cases higher than PCR-negative cases.
+The XGBoost model performed best overall based on AUC, with an AUC of 0.933 after restricting predictors to home-available information. This suggests the model was strong at ranking PCR-positive cases higher than PCR-negative cases.
 
-The dataset was imbalanced, with 501 PCR-negative cases and 58 PCR-positive cases after filtering. Because of this imbalance, accuracy alone was not used to choose the best model. XGBoost had slightly lower accuracy than Logistic Regression, but it had much better AUC and McFadden R².
+The dataset was imbalanced, with 501 PCR-negative cases and 58 PCR-positive cases after filtering. Because of this imbalance, AUC was used as the main model selection metric. XGBoost had slightly higher accuracy than the Logistic Regression and LASSO models and had much better AUC and McFadden R².
 
-The LASSO model was used for feature selection. It identified neurological symptoms, at-home test confirmation variables, COVID result variables, vaccine-related variables, and location-related variables among the strongest predictors.
+The LASSO model was used for feature selection. It identified neurological symptoms, at-home test confirmation variables, symptom variables, vaccine-related variables, and location-related variables among the strongest predictors.
 
 These results should be interpreted as predictive, not causal. The model identifies patterns associated with PCR positivity, but it does not prove that any predictor causes COVID-19 infection.
 
@@ -403,7 +406,7 @@ The main notebook is designed to run from top to bottom using the files included
 
 ## Output Files Created by the Notebook
 
-Running the notebook creates the following output files:
+Running the notebook creates the following output files. These files are generated when the notebook is run and may not be stored directly in the repository.
 
 | Output File | Description |
 |---|---|
@@ -416,8 +419,6 @@ Running the notebook creates the following output files:
 | `covid_network_edges.csv` | Edge list for the predictor network |
 | `covid_network_clean.png` | Network visualization |
 | `llm_model_explanation.txt` | Gemini or fallback explanation of model results |
-
-These files are generated when the notebook is run and may not be stored directly in the repository.  
 
 In this run, no Markov parent models were found, so the Markov blanket and CPT sections were skipped or limited.
 
@@ -434,8 +435,9 @@ matplotlib
 networkx
 scikit-learn
 xgboost
-google-genai
+google-generativeai
 ipywidgets
+streamlit
 ```
 
 Install the required packages with:
@@ -493,9 +495,8 @@ Dataset dimensions used in this project:
 
 ## Deployment
 
-A Streamlit version of this project summary is deployed here:
+A Streamlit version of this project is deployed here:
 
 https://rbrown-65-covid-19-prediction-ai-system-app-v1qsd3.streamlit.app/
 
-The deployed app summarizes the dataset, model results, direct predictors, network interpretation, and Gemini/fallback explanation. The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
-
+The deployed app summarizes the dataset, model results, direct predictors, network interpretation, and at-home COVID-19 screening workflow. The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
