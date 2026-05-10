@@ -2,12 +2,17 @@
 
 ## Using COVIDCARE Data, Machine Learning, Network Analysis, and Gemini LLM Explanation
 
-**Course:** HI823- Causal Analysis & Comparative Effectiveness  
+**Course:** HI823: Causal Analysis & Comparative Effectiveness  
 **School:** George Mason University  
 **Instructor:** Dr. Abdul Hafeez  
 <sub>This project was prepared using course materials by Dr. Farrokh Alemi for the Comparative Effectiveness course at http://openonlinecourses.com/causalanalysis/ and starter code provided by TA Chandana Reddy Gajjala. ChatGPT was used for debugging, code organization, and repository setup support.</sub>    
 **Project:** COVID-19 Home Diagnosis AI System  
 **Author:** Rebekah Brown  
+
+---
+## Objective
+
+The objective of this project was to develop and evaluate a COVID-19 prediction workflow using COVIDCARE survey data, DEMI knowledgebase-derived pairwise association processing, machine learning classifiers, and a Gemini-based explanation component.
 
 ---
 
@@ -39,7 +44,6 @@ The LLM does **not** train the model or change the prediction. It is used only t
 | `COVIDCARE_FORSUBMISSION_MIT_CLEANED_Phase_II_2021-12-03.csv` | Raw patient-level COVIDCARE data |
 | `COVIDCARE_DEMI_knowledgebase_v4.csv` | DEMI knowledgebase used for pairwise variable relationships |
 | `COVIDCARE_survey_dictionary_v2_ForSubmission_MIT_Phase_II_2021-12-26.csv` | Survey data dictionary |
-| `merged.csv` | Additional merged data file included in the repository |
 | `requirements.txt` | Python package dependencies |
 | `README.md` | Project description and run instructions |
 
@@ -362,13 +366,13 @@ The LLM then generates a plain-English explanation of the model results.
 
 The LLM does **not** train the model and does **not** change the predictions.
 
-In this run, Gemini successfully generated an explanation and saved it as:
+When a valid Gemini API key is available, the notebook can generate an LLM explanation and save it as:  
 
 ```text
 llm_model_explanation.txt
 ```
 
-If no Gemini API key is available, the notebook still runs and creates a fallback automated explanation instead.
+If no Gemini API key is available, the notebook still runs and creates a fallback automated explanation instead.  
 
 ---
 
@@ -381,6 +385,12 @@ The dataset was imbalanced, with 501 PCR-negative cases and 58 PCR-positive case
 The LASSO model was used for feature selection. It identified neurological symptoms, at-home test confirmation variables, COVID result variables, vaccine-related variables, and location-related variables among the strongest predictors.
 
 These results should be interpreted as predictive, not causal. The model identifies patterns associated with PCR positivity, but it does not prove that any predictor causes COVID-19 infection.
+
+---
+
+## Repository Status
+
+The main notebook is designed to run from top to bottom using the files included in this repository. Generated outputs are recreated when the notebook is executed. The Gemini LLM component is optional and will use a fallback explanation if no valid API key is available.
 
 ---
 
@@ -399,6 +409,8 @@ Running the notebook creates the following output files:
 | `covid_network_edges.csv` | Edge list for the predictor network |
 | `covid_network_clean.png` | Network visualization |
 | `llm_model_explanation.txt` | Gemini or fallback explanation of model results |
+
+These files are generated when the notebook is run and may not be stored directly in the repository.  
 
 In this run, no Markov parent models were found, so the Markov blanket and CPT sections were skipped or limited.
 
@@ -458,3 +470,14 @@ Dataset dimensions used in this project:
 70,983 DEMI knowledgebase rows
 ```
 
+---
+
+## References
+
+1. World Health Organization. Coronavirus disease (COVID-19). https://www.who.int/health-topics/coronavirus#tab=tab_1. Accessed May 10, 2026.
+2. Menni C, Valdes AM, Freidin MB, et al. Real-time tracking of self-reported symptoms to predict potential COVID-19. Nat Med. 2020;26(7):1037–1040. doi:10.1038/s41591-020-0916-2
+3. Canas LS, Sudre CH, Capdevila Pujol J, et al. Early detection of COVID-19 in the UK using self-reported symptoms: a large-scale, prospective, epidemiological surveillance study. Lancet Digit Health. 2021;3(9):e587–e598. doi:10.1016/S2589-7500(21)00131-X
+4. Zoabi Y, Deri-Rozov S, Shomron N. Machine learning-based prediction of COVID-19 diagnosis based on symptoms. npj Digit Med. 2021;4:3. doi:10.1038/s41746-020-00372-6
+5. Langer T, Favarato M, Giudici R, et al. Development of machine learning models to predict RT-PCR results for severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) in patients with influenza-like symptoms using only basic clinical data. Scand J Trauma Resusc Emerg Med. 2020;28:113. doi:10.1186/s13049-020-00808-8
+6. Shakeel SM, Kumar NS, Madalli PP, Srinivasaiah R, Swamy DR. COVID-19 prediction models: a systematic literature review. Osong Public Health Res Perspect. 2021;12(4):215–229. doi:10.24171/j.phrp.2021.0100
+7. Alemi F. DEMI: Directed expectation-maximization for inference—a causal AI algorithm [course materials]. Comparative Effectiveness, George Mason University; 2026.
