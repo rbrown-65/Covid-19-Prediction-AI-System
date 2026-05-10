@@ -1,4 +1,6 @@
 import os
+import json
+import joblib
 import pandas as pd
 import streamlit as st
 
@@ -7,12 +9,76 @@ st.set_page_config(
     layout="wide"
 )
 
+# =========================================================
+# HELPER FUNCTIONS
+# =========================================================
+
+@st.cache_resource
+def load_model_artifacts():
+    model = joblib.load("covid_home_screening_model.pkl")
+
+    with open("model_feature_columns.json", "r", encoding="utf-8") as file:
+        feature_columns = json.load(file)
+
+    with open("home_input_mapping.json", "r", encoding="utf-8") as file:
+        input_mapping = json.load(file)
+
+    return model, feature_columns, input_mapping
+
+
+def assign_risk_category(probability):
+    if probability < 0.30:
+        return "Low"
+    elif probability < 0.60:
+        return "Moderate"
+    else:
+        return "High"
+
+
+def build_case_row(user_inputs, feature_columns, input_mapping):
+    case_row = pd.DataFrame(0, index=[0], columns=feature_columns)
+
+    for label, selected in user_inputs.items():
+        variable = input_mapping.get(label)
+
+        if selected and variable in case_row.columns:
+            case_row.loc[0, variable] = 1
+
+    # Recreate interaction terms if they exist in the model features
+    for col in case_row.columns:
+        if "__X__" in col:
+            parts = col.split("__X__")
+
+            if all(part in case_row.columns for part in parts):
+                product_value = 1
+
+                for part in parts:
+                    product_value = product_value * case_row.loc[0, part]
+
+                case_row.loc[0, col] = product_value
+
+    return case_row
+
+
+def make_recommendation(risk_category):
+    if risk_category == "Low":
+        return "Low screening risk. Continue monitoring symptoms and follow public health guidance."
+    elif risk_category == "Moderate":
+        return "Moderate screening risk. Consider confirmatory testing and monitor symptoms closely."
+    else:
+        return "High screening risk. Seek confirmatory testing or clinical guidance, especially if symptoms worsen."
+
+
+# =========================================================
+# PAGE HEADER
+# =========================================================
+
 st.title("COVID-19 At-Home Screening AI System")
 st.subheader("COVIDCARE Data, Machine Learning, Network Analysis, and Gemini Explanation")
 
 st.write(
     """
-    This app summarizes and demonstrates a COVID-19 at-home screening workflow using
+    This app demonstrates an at-home COVID-19 screening-support workflow using
     COVIDCARE survey data, DEMI knowledgebase processing, machine learning models,
     and an optional Gemini-based explanation component.
     """
@@ -25,6 +91,10 @@ st.info(
     """
 )
 
+# =========================================================
+# PROJECT OBJECTIVE
+# =========================================================
+
 st.markdown("## Project Objective")
 
 st.write(
@@ -34,6 +104,10 @@ st.write(
     before a clinic or emergency room visit.
     """
 )
+
+# =========================================================
+# DATASET SUMMARY
+# =========================================================
 
 st.markdown("## Dataset Summary")
 
@@ -51,6 +125,10 @@ st.write(
     better reflects information available before a clinical visit.
     """
 )
+
+# =========================================================
+# MODEL RESULTS
+# =========================================================
 
 st.markdown("## Model Results")
 
@@ -91,6 +169,117 @@ st.success(
     """
 )
 
+# =========================================================
+# INTERACTIVE AT-HOME SCREENING SYSTEM
+# =========================================================
+
+st.markdown("## Interactive At-Home COVID-19 Screening")
+
+st.write(
+    """
+    Select the home-available findings below. The app loads the trained XGBoost model
+    from the notebook and estimates the probability of PCR-confirmed COVID-19.
+    """
+)
+
+model_files_exist = (
+    os.path.exists("covid_home_screening_model.pkl")
+    and os.path.exists("model_feature_columns.json")
+    and os.path.exists("home_input_mapping.json")
+)
+
+if not model_files_exist:
+    st.error(
+        """
+        Model artifact files are missing. The notebook must be run through Part Q2
+        to create `covid_home_screening_model.pkl`, `model_feature_columns.json`,
+        and `home_input_mapping.json`.
+        """
+    )
+
+else:
+    model, feature_columns, input_mapping = load_model_artifacts()
+
+    st.markdown("### At-Home Inputs")
+
+    user_inputs = {}
+
+    for label in input_mapping.keys():
+        user_inputs[label] = st.checkbox(label, value=False)
+
+    if st.button("Estimate COVID-19 Risk"):
+        case_row = build_case_row(user_inputs, feature_columns, input_mapping)
+
+        probability = model.predict_proba(case_row)[0, 1]
+        risk_category = assign_risk_category(probability)
+        recommendation = make_recommendation(risk_category)
+
+        st.markdown("### Screening Result")
+
+        result_col1, result_col2, result_col3 = st.columns(3)
+
+        result_col1.metric(
+            "Predicted PCR-positive probability",
+            f"{probability:.4f}"
+        )
+
+        result_col2.metric(
+            "Risk category",
+            risk_category
+        )
+
+        result_col3.metric(
+            "Model used",
+            "XGBoost"
+        )
+
+        if risk_category == "Low":
+            st.success(recommendation)
+        elif risk_category == "Moderate":
+            st.warning(recommendation)
+        else:
+            st.error(recommendation)
+
+        st.info(
+            """
+            This is a screening-support estimate, not a definitive diagnosis.
+            PCR or another clinically accepted test remains the diagnostic standard.
+            """
+        )
+
+        selected_inputs = [
+            label for label, selected in user_inputs.items()
+            if selected
+        ]
+
+        if selected_inputs:
+            st.markdown("### Selected Inputs")
+            st.write(selected_inputs)
+        else:
+            st.markdown("### Selected Inputs")
+            st.write("No at-home findings were selected.")
+
+        explanation = f"""
+At-Home COVID-19 Screening Explanation
+
+The trained XGBoost model estimated a PCR-positive COVID-19 probability of {probability:.3f}.
+This result was classified as {risk_category} risk.
+
+The selected at-home inputs were:
+{", ".join(selected_inputs) if selected_inputs else "None selected"}
+
+This output should be interpreted as screening support, not a definitive diagnosis.
+A higher predicted probability suggests that confirmatory testing or clinical guidance may be appropriate,
+especially if symptoms worsen or exposure risk is high. PCR or another clinically accepted test remains
+the diagnostic standard.
+"""
+
+        st.text_area("Plain-Language Explanation", explanation, height=260)
+
+# =========================================================
+# TOP DIRECT PREDICTORS
+# =========================================================
+
 st.markdown("## Top Direct Predictors")
 
 direct_predictors = pd.DataFrame({
@@ -130,63 +319,9 @@ st.write(
     """
 )
 
-st.markdown("## At-Home COVID-19 Screening Example")
-
-st.write(
-    """
-    The final notebook section converts the trained XGBoost model into a simple
-    at-home screening-support workflow. The example below uses information that could
-    reasonably be known before a clinic or emergency room visit, such as symptoms
-    and at-home test confirmation fields.
-    """
-)
-
-st.markdown("### Example At-Home Inputs")
-
-home_inputs = pd.DataFrame({
-    "Input Variable": [
-        "30158-Symtpom_Neuro-7",
-        "30158-Symtpom_Neuro-8",
-        "30141-covid_tst_symptoms-3",
-        "30766-pinkblue_confirm"
-    ],
-    "Value": [
-        1,
-        1,
-        1,
-        1
-    ],
-    "Interpretation": [
-        "Neurological symptom field present",
-        "Neurological symptom field present",
-        "COVID-like symptom field present",
-        "At-home test confirmation field present"
-    ]
-})
-
-st.dataframe(home_inputs, use_container_width=True)
-
-st.markdown("### Screening Result")
-
-screen_col1, screen_col2, screen_col3 = st.columns(3)
-
-screen_col1.metric("Predicted PCR-positive probability", "0.9225")
-screen_col2.metric("Risk category", "High")
-screen_col3.metric("Best model", "XGBoost")
-
-st.warning(
-    """
-    Recommendation: High screening risk. Seek confirmatory testing or clinical guidance,
-    especially if symptoms worsen.
-    """
-)
-
-st.info(
-    """
-    This is a screening-support estimate, not a definitive diagnosis. PCR or another
-    clinically accepted test remains the diagnostic standard.
-    """
-)
+# =========================================================
+# NETWORK ANALYSIS
+# =========================================================
 
 st.markdown("## Network Analysis")
 
@@ -205,6 +340,10 @@ if os.path.exists("covid_network_clean.png"):
     )
 else:
     st.info("Network image is created when the notebook is run.")
+
+# =========================================================
+# GEMINI / FALLBACK EXPLANATION
+# =========================================================
 
 st.markdown("## Gemini / Fallback Explanation")
 
@@ -228,21 +367,24 @@ if os.path.exists("llm_model_explanation.txt"):
     with open("llm_model_explanation.txt", "r", encoding="utf-8") as file:
         explanation = file.read()
 
-    st.text_area("Explanation Output", explanation, height=300)
+    st.text_area("Notebook Explanation Output", explanation, height=300)
 else:
     fallback_preview = """
 At-Home COVID-19 Screening Explanation
 
 The screening system used the XGBoost model because it had the strongest AUC during model evaluation.
-For the example at-home patient scenario, the predicted probability of PCR-positive COVID-19 was 0.923.
-This was classified as High risk.
+The result should be interpreted as screening support, not a definitive diagnosis.
 
-This result should be interpreted as screening support, not a definitive diagnosis. A higher predicted
-probability suggests that confirmatory testing or clinical guidance may be appropriate, especially if
-symptoms worsen or exposure risk is high. PCR or another clinically accepted test remains the diagnostic standard.
+A higher predicted probability suggests that confirmatory testing or clinical guidance may be appropriate,
+especially if symptoms worsen or exposure risk is high. PCR or another clinically accepted test remains
+the diagnostic standard.
 """
 
     st.text_area("Fallback Explanation Preview", fallback_preview, height=260)
+
+# =========================================================
+# REPOSITORY AND DEPLOYMENT NOTE
+# =========================================================
 
 st.markdown("## Repository")
 
@@ -254,8 +396,8 @@ st.markdown("## Deployment Note")
 
 st.write(
     """
-    This Streamlit app is a deployed project demonstration. The full model-building workflow
-    is contained in the Jupyter notebook and can be executed from the GitHub repository using
-    GitHub Codespaces.
+    This Streamlit app is a deployed interactive project demonstration. The full
+    model-building workflow is contained in the Jupyter notebook and can be executed
+    from the GitHub repository using GitHub Codespaces.
     """
 )
