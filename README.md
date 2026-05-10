@@ -499,4 +499,8 @@ A Streamlit version of this project is deployed here:
 
 https://rbrown-65-covid-19-prediction-ai-system-app-v1qsd3.streamlit.app/
 
-The deployed app summarizes the dataset, model results, direct predictors, network interpretation, and at-home COVID-19 screening workflow. The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
+The deployed app demonstrates the at-home COVID-19 screening workflow. It summarizes the dataset, model results, direct predictors, network interpretation, and example screening output from the final XGBoost model.
+
+The app shows an example at-home patient scenario with home-available inputs, a predicted probability of PCR-positive COVID-19, a risk category, and a screening recommendation. The output is intended for screening support only and does not replace PCR testing or clinical judgment.
+
+The full reproducible notebook is available in this repository and can be executed using GitHub Codespaces.
