@@ -153,7 +153,9 @@ After removing records with missing PCR outcome values, the modeling dataset con
 ```text
 559 patients
 445 modeling columns
-444 predictor variables
+394 home-available predictor variables
+
+The updated model excludes likely clinic, laboratory, PCR-result, and post-diagnosis variables so that the prediction workflow better reflects information available at home before a clinic or emergency room visit.
 ```
 
 PCR outcome distribution:
@@ -241,11 +243,11 @@ The notebook compared Logistic Regression, LASSO Logistic Regression, and XGBoos
 
 | Model | AUC | Accuracy | McFadden R² | % Variation Explained |
 |---|---:|---:|---:|---:|
-| XGBoost | 0.948 | 93.6% | 0.565 | 56.5% |
-| Logistic Regression | 0.877 | 95.7% | -0.178 | -17.8% |
-| LASSO Logistic Regression | 0.868 | 95.0% | -0.241 | -24.1% |
+| XGBoost | 0.933 | 93.6% | 0.473 | 47.3% |
+| Logistic Regression | 0.857 | 92.9% | -0.698 | -69.8% |
+| LASSO Logistic Regression | 0.856 | 92.9% | -0.858 | -85.8% |
 
-The best-performing model based on AUC was **XGBoost**.
+The best-performing model based on AUC was **XGBoost**. After restricting predictors to home-available information, XGBoost still showed the strongest discrimination, with an AUC of 0.933.
 
 Although Logistic Regression had the highest accuracy, XGBoost had the strongest overall discrimination based on AUC and the best McFadden R². This matters because the dataset is imbalanced, with many more PCR-negative cases than PCR-positive cases, so accuracy alone can be misleading.
 
@@ -283,16 +285,16 @@ Top direct predictors included:
 
 | Predictor | Coefficient |
 |---|---:|
-| `30158-Symtpom_Neuro-7` | 1.060 |
-| `30766-pinkblue_confirm` | 0.648 |
-| `31386-covid_results-1` | 0.544 |
-| `31386-covid_results-2` | -0.382 |
-| `30183-states_specify-42` | 0.364 |
-| `30183-states_specify-33` | 0.357 |
-| `32137-vaccine_avail` | 0.351 |
-| `32138-vaccine_factors-13` | 0.326 |
-| `30158-Symtpom_Neuro-8` | 0.316 |
-| `30141-covid_tst_symptoms-3` | 0.311 |
+| `30158-Symtpom_Neuro-7` | 1.212 |
+| `30766-pinkblue_confirm` | 0.925 |
+| `32359-blue_nopink_confirm_2` | -0.494 |
+| `30183-states_specify-33` | 0.428 |
+| `30153-Symptoms-2` | 0.422 |
+| `32137-vaccine_avail` | 0.421 |
+| `32138-vaccine_factors-17` | 0.421 |
+| `30183-states_specify-42` | 0.415 |
+| `30158-Symtpom_Neuro-8` | 0.405 |
+| `31396-join_hear-6` | 0.396 |
 
 Positive coefficients indicate variables associated with higher predicted probability of PCR positivity. Negative coefficients indicate variables associated with lower predicted probability.
 
@@ -303,6 +305,19 @@ The direct predictor table is saved as:
 ```text
 direct_predictors_pcr.csv
 ```
+
+---
+
+## At-Home COVID-19 Screening System
+
+The final notebook section converts the trained model into a simple at-home screening-support workflow. The system uses home-available inputs, such as symptoms and at-home test confirmation fields, to estimate the probability of PCR-confirmed COVID-19.
+
+For the example patient scenario in the notebook, the system produced:
+
+```text
+Predicted probability of PCR-positive COVID-19: 0.9225
+Risk category: High
+Recommendation: High screening risk. Seek confirmatory testing or clinical guidance, especially if symptoms worsen.
 
 ---
 
@@ -351,28 +366,20 @@ This section remains in the notebook so the workflow can create CPT tables if pa
 
 ---
 
+```markdown
 ## Gemini LLM Explanation
 
 The notebook includes a Gemini LLM explanation component in Part R.
 
-The LLM uses:
+The LLM explains the at-home screening result, including:
 
-- Model results
-- Top direct predictors
-- Network summary
-- Markov parent-model results when available
+- The predicted probability of PCR-positive COVID-19
+- The risk category
+- The home-available inputs used in the example
+- Why the output is screening support rather than a definitive diagnosis
+- Why confirmatory testing or clinical guidance may still be needed
 
-The LLM then generates a plain-English explanation of the model results.
-
-The LLM does **not** train the model and does **not** change the predictions.
-
-When a valid Gemini API key is available, the notebook can generate an LLM explanation and save it as:  
-
-```text
-llm_model_explanation.txt
-```
-
-If no Gemini API key is available, the notebook still runs and creates a fallback automated explanation instead.  
+If no Gemini API key is available, the notebook creates a fallback automated explanation instead. The LLM does **not** train the model, change predictors, alter predictions, or evaluate performance.
 
 ---
 
