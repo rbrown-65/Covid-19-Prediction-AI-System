@@ -4,4 +4,6 @@ matplotlib
 networkx
 scikit-learn
 xgboost
-google-generativeai
+google-genai
+ipywidgets
+streamlit
